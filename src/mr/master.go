@@ -10,7 +10,6 @@ import "os"
 import "net/rpc"
 import "net/http"
 
-
 type Master struct {
 	// Your definitions here.
 	mapTask          []string
@@ -22,7 +21,7 @@ type Master struct {
 }
 
 type ReduceTask struct {
-	taskId int
+	taskId   int
 	fileList []string
 }
 
@@ -30,8 +29,8 @@ type WorkStatus struct {
 	id       int
 	time     int64
 	fileList []string
-	file     []string
 }
+
 // an example RPC handler.
 //
 // the RPC argument and reply types are defined in rpc.go.
@@ -51,7 +50,7 @@ func (m *Master) WorkerHandler(args *ExampleArgs, reply *ExampleReply) error {
 			reply.ReplyType = "map"
 			reply.Filename = m.mapTask[0]
 			reply.ReduceN = m.nReduce
-			m.doingMapTask[reply.Filename] = WorkStatus{id:reply.Id, time:time.Now().Unix()}
+			m.doingMapTask[reply.Filename] = WorkStatus{id: reply.Id, time: time.Now().Unix()}
 			m.mapTask = m.mapTask[1:]
 		} else if len(m.doingMapTask) > 0 {
 			reply.ReplyType = "wait"
@@ -60,7 +59,7 @@ func (m *Master) WorkerHandler(args *ExampleArgs, reply *ExampleReply) error {
 			rt := m.reduceTask[0]
 			reply.TaskId = rt.taskId
 			reply.ReduceList = rt.fileList
-			m.doingReduceTask[rt.taskId] = WorkStatus{id:reply.Id, time: time.Now().Unix(), fileList: rt.fileList}
+			m.doingReduceTask[rt.taskId] = WorkStatus{id: reply.Id, time: time.Now().Unix(), fileList: rt.fileList}
 			m.reduceTask = m.reduceTask[1:]
 		} else if len(m.doingReduceTask) > 0 {
 			reply.ReplyType = "wait"
@@ -77,7 +76,7 @@ func (m *Master) WorkerHandler(args *ExampleArgs, reply *ExampleReply) error {
 			delete(m.doingMapTask, args.FinishMap)
 		}
 	} else if args.ReqType == "reduceRep" {
-		v, ok :=  m.doingReduceTask[args.FinishReduce]
+		v, ok := m.doingReduceTask[args.FinishReduce]
 		if ok && v.id == args.Id {
 			delete(m.doingReduceTask, args.FinishReduce)
 		}
@@ -89,7 +88,6 @@ func (m *Master) WorkerHandler(args *ExampleArgs, reply *ExampleReply) error {
 
 	return nil
 }
-
 
 //
 // start a thread that listens for RPCs from worker.go
@@ -117,20 +115,21 @@ func (m *Master) Done() bool {
 }
 func (m *Master) CheckLong() {
 	m.mux.Lock()
-	for k,v := range m.doingMapTask {
-		if time.Now().Unix() - v.time > 10 {
+	for k, v := range m.doingMapTask {
+		if time.Now().Unix()-v.time > 10 {
 			delete(m.doingMapTask, k)
 			m.mapTask = append(m.mapTask, k)
 		}
 	}
-	for k,v := range m.doingReduceTask {
-		if time.Now().Unix() - v.time > 10 {
+	for k, v := range m.doingReduceTask {
+		if time.Now().Unix()-v.time > 10 {
 			delete(m.doingReduceTask, k)
 			m.reduceTask = append(m.reduceTask, ReduceTask{taskId: k, fileList: v.fileList})
 		}
 	}
 	m.mux.Unlock()
 }
+
 //
 // create a Master.
 // main/mrmaster.go calls this function.

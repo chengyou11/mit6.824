@@ -12,7 +12,6 @@ import "log"
 import "net/rpc"
 import "hash/fnv"
 
-
 //
 // Map functions return a slice of KeyValue.
 //
@@ -22,6 +21,7 @@ type KeyValue struct {
 }
 
 type ByKey []KeyValue
+
 func (a ByKey) Len() int           { return len(a) }
 func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
@@ -39,8 +39,7 @@ func ihash(key string) int {
 //
 // main/mrworker.go calls this function.
 //
-func Worker(mapf func(string, string) []KeyValue,
-	reducef func(string, []string) string) {
+func Worker(mapf func(string, string) []KeyValue, reducef func(string, []string) string) {
 	id := 0
 	for true {
 		reply := askForCall("ask", id, 0, nil, "")
@@ -82,7 +81,7 @@ func mapFunc(mapf func(string, string) []KeyValue, filename string, nReduce int)
 
 	var fileList []string
 	for i := 0; i < nReduce; i++ {
-		oname := fmt.Sprintf("mr-%v-%v", filename[3:],i)
+		oname := fmt.Sprintf("mr-%v-%v", filename[3:], i)
 		ofile, err := os.Create(oname)
 		if err != nil {
 			log.Fatal("fail to create file ", err)
@@ -106,7 +105,7 @@ func mapFunc(mapf func(string, string) []KeyValue, filename string, nReduce int)
 }
 func reduceFunc(reducef func(string, []string) string, fileList []string, taskId int) {
 	var intermediate []KeyValue
-	oname := fmt.Sprintf("mr-out-%v",taskId)
+	oname := fmt.Sprintf("mr-out-%v", taskId)
 	f, _ := os.Create(oname)
 
 	for _, v := range fileList {
@@ -149,6 +148,7 @@ func reduceFunc(reducef func(string, []string) string, fileList []string, taskId
 	}
 	f.Close()
 }
+
 //
 // example function to show how to make an RPC call to the master.
 //
